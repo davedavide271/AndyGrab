@@ -30,7 +30,7 @@ const Icon = ({ name }) => {
     user: <><circle cx="12" cy="8" r="3"/><path d="M6 20c.4-4 2.4-6 6-6s5.6 2 6 6"/></>,
     phone: <path d="M7 4H5a1 1 0 0 0-1 1c0 8.3 6.7 15 15 15a1 1 0 0 0 1-1v-2l-4-1-1 2c-4-1-8-5-9-9l2-1-1-4Z"/>,
   }
-  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
+  return <svg className="app-icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
 }
 
 function App() {

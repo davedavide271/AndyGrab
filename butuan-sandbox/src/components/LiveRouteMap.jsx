@@ -83,10 +83,14 @@ function LiveRouteMap({ onRouteChange }) {
           })
           routeLineRef.current = L.featureGroup([routeOutline, routePath]).addTo(map)
           map.fitBounds(routeLineRef.current.getBounds(), { padding: [35, 35] })
+          destinationMarkerRef.current.bindTooltip(
+            route.destination,
+            { permanent: true, direction: 'top' },
+          )
           const routeLabel = route.alternativesConsidered > 1
             ? `Quickest of ${route.alternativesConsidered} routes`
             : 'Quickest available route'
-          setStatus(`${routeLabel} · ${route.distance} · about ${route.eta} min`)
+          setStatus(`${routeLabel} · ${route.distance} · about ${route.etaLabel}`)
           onRouteChange(route)
         } catch (error) {
           if (error.name !== 'AbortError') {

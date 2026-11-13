@@ -1,7 +1,18 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import LiveRouteMap from './components/LiveRouteMap'
 import { cancelBooking, createBooking, isSlotAvailable, listBookings } from './services/bookingStore'
+
+const getInitialTheme = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('andygrab_theme')
+    if (saved === 'dark' || saved === 'light') return saved
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark'
+    }
+  }
+  return 'light'
+}
 
 const formatDateInput = (value) => {
   const year = value.getFullYear()
@@ -29,11 +40,14 @@ const Icon = ({ name }) => {
     check: <path d="m7 12 3 3 7-7"/>,
     user: <><circle cx="12" cy="8" r="3"/><path d="M6 20c.4-4 2.4-6 6-6s5.6 2 6 6"/></>,
     phone: <path d="M7 4H5a1 1 0 0 0-1 1c0 8.3 6.7 15 15 15a1 1 0 0 0 1-1v-2l-4-1-1 2c-4-1-8-5-9-9l2-1-1-4Z"/>,
+    sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></>,
+    moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>,
   }
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
 }
 
 function App() {
+  const [theme, setTheme] = useState(getInitialTheme)
   const [trip, setTrip] = useState(null)
   const [date, setDate] = useState(initialPickup.date)
   const [time, setTime] = useState(initialPickup.time)
@@ -42,6 +56,19 @@ function App() {
   const [booked, setBooked] = useState(null)
   const [bookings, setBookings] = useState(() => listBookings())
   const [bookingError, setBookingError] = useState('')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    try {
+      localStorage.setItem('andygrab_theme', theme)
+    } catch {
+      // ignore storage errors if blocked
+    }
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
   const slotAvailable = useMemo(() => isSlotAvailable(date, time, bookings), [bookings, date, time])
   const handleRouteChange = useCallback((route) => {
     setTrip(route)
@@ -82,8 +109,20 @@ function App() {
       <nav className="nav shell" aria-label="Main navigation">
         <a className="brand" href="#top" aria-label="Andy Grab home"><span className="brand-mark">A</span><span>Andy<span>Grab</span></span></a>
         <div className="nav-links"><a href="#services">Services</a><a href="#booking">Book a ride</a><a href="#trips">My trips</a></div>
-        <a className="nav-cta" href="#booking">Book now <Icon name="arrow" /></a>
-        <button className="menu" aria-label="Open menu"><Icon name="menu" /></button>
+        <div className="nav-actions">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          >
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+            <span className="theme-toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
+          <a className="nav-cta" href="#booking">Book now <Icon name="arrow" /></a>
+          <button className="menu" aria-label="Open menu"><Icon name="menu" /></button>
+        </div>
       </nav>
 
       <section className="hero shell" id="top">

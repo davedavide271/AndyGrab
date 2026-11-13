@@ -69,13 +69,28 @@ function LiveRouteMap({ onRouteChange }) {
 
         try {
           const route = await getDrivingRoute({ lat: latlng.lat, lng: latlng.lng }, requestRef.current.signal)
-          routeLineRef.current = L.polyline(route.geometry, {
+          const routeOutline = L.polyline(route.geometry, {
+            color: '#ffffff',
+            weight: 9,
+            opacity: 0.9,
+            interactive: false,
+          })
+          const routePath = L.polyline(route.geometry, {
             color: '#0d6b4f',
             weight: 5,
-            opacity: 0.9,
-          }).addTo(map)
+            opacity: 1,
+            interactive: false,
+          })
+          routeLineRef.current = L.featureGroup([routeOutline, routePath]).addTo(map)
           map.fitBounds(routeLineRef.current.getBounds(), { padding: [35, 35] })
-          setStatus(`${route.distance} driving distance · about ${route.eta} min`)
+          destinationMarkerRef.current.bindTooltip(
+            route.destination,
+            { permanent: true, direction: 'top' },
+          )
+          const routeLabel = route.alternativesConsidered > 1
+            ? `Quickest of ${route.alternativesConsidered} routes`
+            : 'Quickest available route'
+          setStatus(`${routeLabel} · ${route.distance} · about ${route.etaLabel}`)
           onRouteChange(route)
         } catch (error) {
           if (error.name !== 'AbortError') {

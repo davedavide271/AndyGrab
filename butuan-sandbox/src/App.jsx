@@ -30,7 +30,7 @@ const Icon = ({ name }) => {
     user: <><circle cx="12" cy="8" r="3"/><path d="M6 20c.4-4 2.4-6 6-6s5.6 2 6 6"/></>,
     phone: <path d="M7 4H5a1 1 0 0 0-1 1c0 8.3 6.7 15 15 15a1 1 0 0 0 1-1v-2l-4-1-1 2c-4-1-8-5-9-9l2-1-1-4Z"/>,
   }
-  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
+  return <svg className="app-icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
 }
 
 function App() {
@@ -97,7 +97,7 @@ function App() {
 
         <div className="map-visual">
           <LiveRouteMap onRouteChange={handleRouteChange} />
-          <div className="eta-card"><span className="car-icon">✦</span><div><small>Driving ETA</small><strong>{trip ? `${trip.eta} min` : 'Select route'}</strong></div><span className="live-dot">Live</span></div>
+          <div className="eta-card"><span className="car-icon">✦</span><div><small>Driving ETA</small><strong>{trip ? trip.etaLabel : 'Select route'}</strong></div><span className="live-dot">Live</span></div>
           <div className="map-caption"><span><i></i> Origin fixed at Butuan City Hall</span><b>{trip?.distance ?? 'Click the map'}</b></div>
         </div>
       </section>
@@ -146,7 +146,7 @@ function App() {
       <section className="closing"><div className="shell"><p>Ready when you are.</p><h2>Your next ride is<br/><em>just a few taps away.</em></h2><a className="primary-button light" href="#booking">Book with Andy Grab <Icon name="arrow" /></a></div></section>
       <footer className="shell"><a className="brand" href="#top"><span className="brand-mark">A</span><span>Andy<span>Grab</span></span></a><p>Local rides, made simple.</p><small>© 2026 Andy Grab. Frontend demo.</small></footer>
 
-      {booked && <div className="modal-backdrop" role="presentation" onMouseDown={() => setBooked(null)}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title" onMouseDown={(e) => e.stopPropagation()}><span className="success-icon"><Icon name="check" /></span><small>{booked.reference}</small><h2 id="confirmation-title">You’re all set.</h2><p><strong>{booked.passenger.name}</strong>, your ride to <strong>{booked.destination}</strong> is scheduled for {new Date(`${booked.date}T00:00`).toLocaleDateString('en-PH', { month: 'long', day: 'numeric' })} at {booked.time}.</p><div><span>Estimated arrival</span><strong>{booked.eta} minutes</strong></div><button onClick={() => setBooked(null)}>View my trips</button></section></div>}
+      {booked && <div className="modal-backdrop" role="presentation" onMouseDown={() => setBooked(null)}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title" onMouseDown={(e) => e.stopPropagation()}><span className="success-icon"><Icon name="check" /></span><small>{booked.reference}</small><h2 id="confirmation-title">You’re all set.</h2><p><strong>{booked.passenger.name}</strong>, your ride to <strong>{booked.destination}</strong> is scheduled for {new Date(`${booked.date}T00:00`).toLocaleDateString('en-PH', { month: 'long', day: 'numeric' })} at {booked.time}.</p><div><span>Estimated arrival</span><strong>{booked.etaLabel ?? `${booked.eta} min`}</strong></div><button onClick={() => setBooked(null)}>View my trips</button></section></div>}
     </main>
   )
 }

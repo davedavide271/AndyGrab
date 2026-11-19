@@ -475,10 +475,10 @@ function App() {
                 </div>
               </label>
               <button className="fare-button" type="submit" disabled={!trip}>
-                <span>
+                {/* <span>
                   <small>Estimated fare</small>
                   <strong>{trip ? `₱${trip.fare}` : "—"}</strong>
-                </span>
+                </span> */}
                 <b>
                   Reserve ride <Icon name="arrow" />
                 </b>
@@ -589,7 +589,7 @@ function App() {
                           {isDeclined && "Declined"}
                           {booking.status === "cancelled" && "Cancelled"}
                         </span>
-                        <strong>₱{booking.fare}</strong>
+                        {/* <strong>₱{booking.fare}</strong> */}
                       </div>
 
                       {(isAccepted || isPending) && (

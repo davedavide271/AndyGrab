@@ -25,7 +25,7 @@ export const listBookings = () =>
 export const isSlotAvailable = (date, time, bookings = readBookings()) => {
   const requestedTime = new Date(`${date}T${time}`).getTime()
   return !bookings.some((booking) => {
-    if (booking.status !== 'confirmed') return false
+    if (booking.status === 'cancelled' || booking.status === 'declined') return false
     const bookedTime = new Date(`${booking.date}T${booking.time}`).getTime()
     return Math.abs(bookedTime - requestedTime) < 60 * 60 * 1000
   })
@@ -47,7 +47,7 @@ export const createBooking = (booking) => {
     ...booking,
     id: crypto.randomUUID?.() ?? `${Date.now()}`,
     reference: createReference(),
-    status: 'confirmed',
+    status: 'pending',
     driver: 'Andy',
     createdAt: new Date().toISOString(),
   }
@@ -56,11 +56,28 @@ export const createBooking = (booking) => {
   return savedBooking
 }
 
-export const cancelBooking = (bookingId) => {
+export const updateBookingStatus = (bookingId, status, extraData = {}) => {
   const updated = readBookings().map((booking) =>
     booking.id === bookingId
-      ? { ...booking, status: 'cancelled', cancelledAt: new Date().toISOString() }
+      ? {
+          ...booking,
+          status,
+          ...extraData,
+          updatedAt: new Date().toISOString(),
+          ...(status === 'cancelled' ? { cancelledAt: new Date().toISOString() } : {}),
+          ...(status === 'declined' ? { declinedAt: new Date().toISOString() } : {}),
+          ...(status === 'accepted' ? { acceptedAt: new Date().toISOString() } : {}),
+        }
       : booking,
   )
   return writeBookings(updated)
 }
+
+export const acceptBooking = (bookingId) =>
+  updateBookingStatus(bookingId, 'accepted', { declineReason: undefined })
+
+export const declineBooking = (bookingId, reason = '') =>
+  updateBookingStatus(bookingId, 'declined', { declineReason: reason.trim() })
+
+export const cancelBooking = (bookingId) =>
+  updateBookingStatus(bookingId, 'cancelled')

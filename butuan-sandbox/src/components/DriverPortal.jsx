@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
-import BookingMapModal from './BookingMapModal'
+import { useMemo, useState } from "react";
+import BookingMapModal from "./BookingMapModal";
 
-const STATIC_DRIVER_PIN = '1234'
+const STATIC_DRIVER_PIN = "1234";
 
 const Icon = ({ name }) => {
   const paths = {
@@ -21,7 +21,9 @@ const Icon = ({ name }) => {
         <path d="M8 11V7a4 4 0 0 1 8 0v4" />
       </>
     ),
-    phone: <path d="M7 4H5a1 1 0 0 0-1 1c0 8.3 6.7 15 15 15a1 1 0 0 0 1-1v-2l-4-1-1 2c-4-1-8-5-9-9l2-1-1-4Z" />,
+    phone: (
+      <path d="M7 4H5a1 1 0 0 0-1 1c0 8.3 6.7 15 15 15a1 1 0 0 0 1-1v-2l-4-1-1 2c-4-1-8-5-9-9l2-1-1-4Z" />
+    ),
     clock: (
       <>
         <circle cx="12" cy="12" r="8" />
@@ -54,21 +56,21 @@ const Icon = ({ name }) => {
         <line x1="12" y1="16" x2="12.01" y2="16" />
       </>
     ),
-  }
+  };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
       {paths[name]}
     </svg>
-  )
-}
+  );
+};
 
 const PRESET_REASONS = [
-  'Schedule conflict',
-  'Vehicle maintenance / repair',
-  'Destination outside service area',
-  'Personal emergency',
-  'Fully booked for this time window',
-]
+  "Schedule conflict",
+  "Vehicle maintenance / repair",
+  "Destination outside service area",
+  "Personal emergency",
+  "Fully booked for this time window",
+];
 
 export default function DriverPortal({
   bookings,
@@ -77,117 +79,111 @@ export default function DriverPortal({
   onBackToPassenger,
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('andygrab_driver_auth') === 'true'
-  })
-  const [pin, setPin] = useState('')
-  const [pinError, setPinError] = useState('')
-  const [filter, setFilter] = useState('all') // 'all', 'pending', 'accepted', 'declined'
-  const [selectedMapBooking, setSelectedMapBooking] = useState(null)
+    return sessionStorage.getItem("andygrab_driver_auth") === "true";
+  });
+  const [pin, setPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [filter, setFilter] = useState("all"); // 'all', 'pending', 'accepted', 'declined'
+  const [selectedMapBooking, setSelectedMapBooking] = useState(null);
 
   // Decline modal state
-  const [declineTarget, setDeclineTarget] = useState(null)
-  const [declineReason, setDeclineReason] = useState('')
-  const [declineError, setDeclineError] = useState('')
+  const [declineTarget, setDeclineTarget] = useState(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [declineError, setDeclineError] = useState("");
 
   const handlePinSubmit = (e) => {
-    e?.preventDefault?.()
+    e?.preventDefault?.();
     if (!pin || pin.length < 4) {
-      setPinError('Please enter the complete 4-digit PIN.')
-      return
+      setPinError("Please enter the complete 4-digit PIN.");
+      return;
     }
     if (pin === STATIC_DRIVER_PIN) {
-      sessionStorage.setItem('andygrab_driver_auth', 'true')
-      setIsAuthenticated(true)
-      setPinError('')
-      setPin('')
+      sessionStorage.setItem("andygrab_driver_auth", "true");
+      setIsAuthenticated(true);
+      setPinError("");
+      setPin("");
     } else {
-      setPinError('Invalid PIN. Sign-in failed. Please try again.')
-      setPin('')
+      setPinError("Invalid PIN. Sign-in failed. Please try again.");
+      setPin("");
     }
-  }
+  };
 
   const handleKeypadPress = (val) => {
-    if (val === 'clear') {
-      setPin('')
-      setPinError('')
-      return
+    if (val === "clear") {
+      setPin("");
+      setPinError("");
+      return;
     }
-    if (val === 'backspace') {
-      setPin((prev) => prev.slice(0, -1))
-      setPinError('')
-      return
+    if (val === "backspace") {
+      setPin((prev) => prev.slice(0, -1));
+      setPinError("");
+      return;
     }
     if (pin.length < 4) {
-      const nextPin = pin + val
-      setPin(nextPin)
-      setPinError('')
+      const nextPin = pin + val;
+      setPin(nextPin);
+      setPinError("");
       if (nextPin.length === 4) {
         if (nextPin === STATIC_DRIVER_PIN) {
-          sessionStorage.setItem('andygrab_driver_auth', 'true')
-          setIsAuthenticated(true)
-          setPin('')
+          sessionStorage.setItem("andygrab_driver_auth", "true");
+          setIsAuthenticated(true);
+          setPin("");
         } else {
-          setPinError('Invalid PIN. Sign-in failed. Please try again.')
-          setPin('')
+          setPinError("Invalid PIN. Sign-in failed. Please try again.");
+          setPin("");
         }
       }
     }
-  }
-
-  const handleLockPortal = () => {
-    sessionStorage.removeItem('andygrab_driver_auth')
-    setIsAuthenticated(false)
-    setPin('')
-    setPinError('')
-    onBackToPassenger()
-  }
+  };
 
   const handleOpenDeclineModal = (booking) => {
-    setDeclineTarget(booking)
-    setDeclineReason(booking.declineReason || '')
-    setDeclineError('')
-  }
+    setDeclineTarget(booking);
+    setDeclineReason(booking.declineReason || "");
+    setDeclineError("");
+  };
 
   const handleCloseDeclineModal = () => {
-    setDeclineTarget(null)
-    setDeclineReason('')
-    setDeclineError('')
-  }
+    setDeclineTarget(null);
+    setDeclineReason("");
+    setDeclineError("");
+  };
 
   const handleConfirmDecline = (e) => {
-    e?.preventDefault?.()
+    e?.preventDefault?.();
     if (!declineReason.trim()) {
-      setDeclineError('Please provide a reason why you are declining this booking.')
-      return
+      setDeclineError(
+        "Please provide a reason why you are declining this booking.",
+      );
+      return;
     }
     if (declineTarget) {
-      onDeclineBooking(declineTarget.id, declineReason.trim())
-      handleCloseDeclineModal()
+      onDeclineBooking(declineTarget.id, declineReason.trim());
+      handleCloseDeclineModal();
     }
-  }
+  };
 
   const stats = useMemo(() => {
-    const total = bookings.length
-    const pending = bookings.filter((b) => b.status === 'pending').length
+    const total = bookings.length;
+    const pending = bookings.filter((b) => b.status === "pending").length;
     const accepted = bookings.filter(
-      (b) => b.status === 'accepted' || b.status === 'confirmed',
-    ).length
-    const declined = bookings.filter((b) => b.status === 'declined').length
+      (b) => b.status === "accepted" || b.status === "confirmed",
+    ).length;
+    const declined = bookings.filter((b) => b.status === "declined").length;
     const revenue = bookings
-      .filter((b) => b.status === 'accepted' || b.status === 'confirmed')
-      .reduce((sum, b) => sum + (Number(b.fare) || 0), 0)
-    return { total, pending, accepted, declined, revenue }
-  }, [bookings])
+      .filter((b) => b.status === "accepted" || b.status === "confirmed")
+      .reduce((sum, b) => sum + (Number(b.fare) || 0), 0);
+    return { total, pending, accepted, declined, revenue };
+  }, [bookings]);
 
   const filteredBookings = useMemo(() => {
-    if (filter === 'all') return bookings
-    if (filter === 'accepted') {
+    if (filter === "all") return bookings;
+    if (filter === "accepted") {
       return bookings.filter(
-        (b) => b.status === 'accepted' || b.status === 'confirmed',
-      )
+        (b) => b.status === "accepted" || b.status === "confirmed",
+      );
     }
-    return bookings.filter((b) => b.status === filter)
-  }, [bookings, filter])
+    return bookings.filter((b) => b.status === filter);
+  }, [bookings, filter]);
 
   // Dedicated Driver Login Page (when visited directly without auth)
   if (!isAuthenticated) {
@@ -200,7 +196,8 @@ export default function DriverPortal({
           <span className="driver-eyebrow">PORTAL SECURITY</span>
           <h2>Driver Verification</h2>
           <p>
-            Please enter Andy&apos;s 4-digit PIN code to access the booking schedule.
+            Please enter Andy&apos;s 4-digit PIN code to access the booking
+            schedule.
           </p>
 
           <form onSubmit={handlePinSubmit} className="driver-pin-form">
@@ -208,7 +205,7 @@ export default function DriverPortal({
               {[0, 1, 2, 3].map((idx) => (
                 <span
                   key={idx}
-                  className={`pin-dot ${pin.length > idx ? 'filled' : ''} ${pinError ? 'error' : ''}`}
+                  className={`pin-dot ${pin.length > idx ? "filled" : ""} ${pinError ? "error" : ""}`}
                 />
               ))}
             </div>
@@ -221,16 +218,18 @@ export default function DriverPortal({
               value={pin}
               autoFocus
               onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, '').slice(0, 4)
-                setPin(val)
-                setPinError('')
+                const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                setPin(val);
+                setPinError("");
                 if (val.length === 4) {
                   if (val === STATIC_DRIVER_PIN) {
-                    sessionStorage.setItem('andygrab_driver_auth', 'true')
-                    setIsAuthenticated(true)
+                    sessionStorage.setItem("andygrab_driver_auth", "true");
+                    setIsAuthenticated(true);
                   } else {
-                    setPinError('Invalid PIN. Sign-in failed. Please try again.')
-                    setPin('')
+                    setPinError(
+                      "Invalid PIN. Sign-in failed. Please try again.",
+                    );
+                    setPin("");
                   }
                 }
               }}
@@ -252,7 +251,7 @@ export default function DriverPortal({
               <button
                 type="button"
                 className="keypad-btn action"
-                onClick={() => handleKeypadPress('clear')}
+                onClick={() => handleKeypadPress("clear")}
                 title="Clear"
               >
                 C
@@ -260,14 +259,14 @@ export default function DriverPortal({
               <button
                 type="button"
                 className="keypad-btn"
-                onClick={() => handleKeypadPress('0')}
+                onClick={() => handleKeypadPress("0")}
               >
                 0
               </button>
               <button
                 type="button"
                 className="keypad-btn action"
-                onClick={() => handleKeypadPress('backspace')}
+                onClick={() => handleKeypadPress("backspace")}
                 title="Backspace"
               >
                 ⌫
@@ -304,7 +303,7 @@ export default function DriverPortal({
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -315,17 +314,12 @@ export default function DriverPortal({
             <span className="live-dot" /> Driver Active · Andy
           </div>
           <h1>Driver Dashboard</h1>
-          <p>Review customer booking requests, accept rides, and manage your schedule.</p>
+          <p>
+            Review customer booking requests, accept rides, and manage your
+            schedule.
+          </p>
         </div>
         <div className="driver-header-actions">
-          <button
-            type="button"
-            className="driver-secondary-btn"
-            onClick={handleLockPortal}
-            title="Lock driver portal and sign out"
-          >
-            <Icon name="lock" /> Sign Out
-          </button>
           <button
             type="button"
             className="driver-primary-btn"
@@ -354,47 +348,53 @@ export default function DriverPortal({
         </div>
         <div className="stat-card">
           <small>EST. CONFIRMED EARNINGS</small>
-          <div className="stat-val revenue">₱{stats.revenue.toLocaleString()}</div>
+          <div className="stat-val revenue">
+            ₱{stats.revenue.toLocaleString()}
+          </div>
           <span className="stat-desc">{stats.accepted} scheduled trips</span>
         </div>
       </div>
 
       <div className="driver-bookings-section">
         <div className="driver-controls-bar">
-          <div className="filter-pills" role="tablist" aria-label="Filter bookings">
+          <div
+            className="filter-pills"
+            role="tablist"
+            aria-label="Filter bookings"
+          >
             <button
               type="button"
               role="tab"
-              aria-selected={filter === 'all'}
-              className={`filter-pill ${filter === 'all' ? 'active' : ''}`}
-              onClick={() => setFilter('all')}
+              aria-selected={filter === "all"}
+              className={`filter-pill ${filter === "all" ? "active" : ""}`}
+              onClick={() => setFilter("all")}
             >
               All ({bookings.length})
             </button>
             <button
               type="button"
               role="tab"
-              aria-selected={filter === 'pending'}
-              className={`filter-pill ${filter === 'pending' ? 'active' : ''}`}
-              onClick={() => setFilter('pending')}
+              aria-selected={filter === "pending"}
+              className={`filter-pill ${filter === "pending" ? "active" : ""}`}
+              onClick={() => setFilter("pending")}
             >
               Pending ({stats.pending})
             </button>
             <button
               type="button"
               role="tab"
-              aria-selected={filter === 'accepted'}
-              className={`filter-pill ${filter === 'accepted' ? 'active' : ''}`}
-              onClick={() => setFilter('accepted')}
+              aria-selected={filter === "accepted"}
+              className={`filter-pill ${filter === "accepted" ? "active" : ""}`}
+              onClick={() => setFilter("accepted")}
             >
               Accepted ({stats.accepted})
             </button>
             <button
               type="button"
               role="tab"
-              aria-selected={filter === 'declined'}
-              className={`filter-pill ${filter === 'declined' ? 'active' : ''}`}
-              onClick={() => setFilter('declined')}
+              aria-selected={filter === "declined"}
+              className={`filter-pill ${filter === "declined" ? "active" : ""}`}
+              onClick={() => setFilter("declined")}
             >
               Declined ({stats.declined})
             </button>
@@ -408,31 +408,32 @@ export default function DriverPortal({
             </div>
             <h3>No bookings found</h3>
             <p>
-              {filter === 'all'
-                ? 'No rides have been scheduled yet by passengers.'
+              {filter === "all"
+                ? "No rides have been scheduled yet by passengers."
                 : `There are currently no bookings with status "${filter}".`}
             </p>
           </div>
         ) : (
           <div className="driver-card-list">
             {filteredBookings.map((b) => {
-              const isPending = b.status === 'pending'
-              const isAccepted = b.status === 'accepted' || b.status === 'confirmed'
-              const isDeclined = b.status === 'declined'
-              const isCancelled = b.status === 'cancelled'
+              const isPending = b.status === "pending";
+              const isAccepted =
+                b.status === "accepted" || b.status === "confirmed";
+              const isDeclined = b.status === "declined";
+              const isCancelled = b.status === "cancelled";
 
               return (
-                <article
-                  key={b.id}
-                  className={`driver-trip-card ${b.status}`}
-                >
+                <article key={b.id} className={`driver-trip-card ${b.status}`}>
                   <div className="driver-trip-left">
                     <div className="driver-trip-time">
                       <strong>
-                        {new Date(`${b.date}T00:00`).toLocaleDateString('en-PH', {
-                          day: '2-digit',
-                          month: 'short',
-                        })}
+                        {new Date(`${b.date}T00:00`).toLocaleDateString(
+                          "en-PH",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                          },
+                        )}
                       </strong>
                       <span>{b.time}</span>
                     </div>
@@ -441,10 +442,10 @@ export default function DriverPortal({
                       <div className="driver-ref-row">
                         <span className="ref-tag">{b.reference}</span>
                         <span className={`status-chip ${b.status}`}>
-                          {isPending && 'Pending Decision'}
-                          {isAccepted && 'Accepted'}
-                          {isDeclined && 'Declined'}
-                          {isCancelled && 'Cancelled by Passenger'}
+                          {isPending && "Pending Decision"}
+                          {isAccepted && "Accepted"}
+                          {isDeclined && "Declined"}
+                          {isCancelled && "Cancelled by Passenger"}
                         </span>
                       </div>
 
@@ -462,7 +463,8 @@ export default function DriverPortal({
 
                       <div className="driver-meta-row">
                         <span>
-                          <Icon name="user" /> {b.passenger?.name || 'Passenger'}
+                          <Icon name="user" />{" "}
+                          {b.passenger?.name || "Passenger"}
                         </span>
                         {b.passenger?.phone && (
                           <a
@@ -484,8 +486,12 @@ export default function DriverPortal({
                       {/* Display decline reason if present */}
                       {isDeclined && (
                         <div className="driver-decline-reason-display">
-                          <strong>Decline Reason (visible to passenger):</strong>
-                          <p>{b.declineReason || 'No specific reason provided.'}</p>
+                          <strong>
+                            Decline Reason (visible to passenger):
+                          </strong>
+                          <p>
+                            {b.declineReason || "No specific reason provided."}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -553,7 +559,7 @@ export default function DriverPortal({
                     </div>
                   </div>
                 </article>
-              )
+              );
             })}
           </div>
         )}
@@ -577,7 +583,11 @@ export default function DriverPortal({
               <small className="driver-eyebrow">DECLINE BOOKING REQUEST</small>
               <h2 id="decline-modal-title">Provide Reason for Declining</h2>
               <p className="decline-modal-sub">
-                This reason will be displayed directly to <strong>{declineTarget.passenger?.name || 'the passenger'}</strong> for trip <strong>{declineTarget.reference}</strong>.
+                This reason will be displayed directly to{" "}
+                <strong>
+                  {declineTarget.passenger?.name || "the passenger"}
+                </strong>{" "}
+                for trip <strong>{declineTarget.reference}</strong>.
               </p>
             </div>
 
@@ -589,7 +599,9 @@ export default function DriverPortal({
                 </div>
                 <div>
                   <small>DATE & TIME</small>
-                  <strong>{declineTarget.date} at {declineTarget.time}</strong>
+                  <strong>
+                    {declineTarget.date} at {declineTarget.time}
+                  </strong>
                 </div>
                 <div>
                   <small>DESTINATION</small>
@@ -606,8 +618,8 @@ export default function DriverPortal({
                       type="button"
                       className="preset-chip"
                       onClick={() => {
-                        setDeclineReason(preset)
-                        setDeclineError('')
+                        setDeclineReason(preset);
+                        setDeclineError("");
                       }}
                     >
                       {preset}
@@ -621,8 +633,8 @@ export default function DriverPortal({
                 <textarea
                   value={declineReason}
                   onChange={(e) => {
-                    setDeclineReason(e.target.value)
-                    setDeclineError('')
+                    setDeclineReason(e.target.value);
+                    setDeclineError("");
                   }}
                   rows={3}
                   placeholder="Explain why you cannot take this booking..."
@@ -639,10 +651,7 @@ export default function DriverPortal({
               )}
 
               <div className="decline-modal-actions">
-                <button
-                  type="submit"
-                  className="btn-confirm-decline"
-                >
+                <button type="submit" className="btn-confirm-decline">
                   <Icon name="x" /> Confirm Decline
                 </button>
                 <button
@@ -666,5 +675,5 @@ export default function DriverPortal({
         />
       )}
     </div>
-  )
+  );
 }

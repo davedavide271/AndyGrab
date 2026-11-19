@@ -27,6 +27,17 @@ const getInitialTheme = () => {
   return "light";
 };
 
+const getInitialTheme = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('andygrab_theme')
+    if (saved === 'dark' || saved === 'light') return saved
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark'
+    }
+  }
+  return 'light'
+}
+
 const formatDateInput = (value) => {
   const year = value.getFullYear();
   const month = `${value.getMonth() + 1}`.padStart(2, "0");

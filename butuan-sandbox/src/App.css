@@ -198,6 +198,17 @@
 .fare-button span strong { font:600 18px 'Manrope'; }
 .fare-button b { display:flex; align-items:center; font-size:11px; font-weight:600; }
 .booking-card > :nth-child(n+5):not(.booking-error):not(.slot-status) { margin-top: 22px; }
+.route-comparison { grid-column: 1 / -1; min-width: 0; margin-inline: 0; padding: 0; border: 0; }
+.route-comparison legend { margin-bottom: 10px; color: var(--muted); font-size: 9px; letter-spacing: .8px; text-transform: uppercase; }
+.route-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; }
+.route-option { display: grid; gap: 7px; padding: 12px; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+.route-option.selected { border-color: var(--green); background: var(--surface-alt); }
+.route-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.route-option:focus-within { outline: 2px solid var(--green); outline-offset: 2px; }
+.route-option-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--ink); font-size: 11px; }
+.route-option-summary b { color: var(--green); font-size: 14px; }
+.route-option-details, .route-note { color: var(--muted); font-size: 10px; }
+.route-note { margin: 10px 0 0; }
 .slot-status, .booking-error { grid-column: 1 / -1; margin: 14px 0 0; font-size: 11px; }
 .slot-status { color: var(--green); }
 .slot-status i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #2bb673; }

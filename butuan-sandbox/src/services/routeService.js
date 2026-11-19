@@ -140,8 +140,41 @@ export const getDrivingRoute = async (origin, destination, signal) => {
     throw new Error('No drivable route was found between these locations.')
   }
 
-  const distanceKm = route.distance / 1000
-  const eta = Math.max(1, Math.ceil(route.duration / 60))
+  if (!response.ok) {
+    throw new Error('Place search is temporarily unavailable.')
+  }
+
+  const results = await response.json()
+
+  return results.map((place) => ({
+    id: place.place_id,
+    name: formatEstimatedLocation(place) || place.display_name,
+    displayName: place.display_name,
+    lat: Number(place.lat),
+    lng: Number(place.lon),
+  }))
+}
+
+export const reverseGeocode = async (location, signal) => {
+  const query = new URLSearchParams({
+    format: 'jsonv2',
+    lat: String(location.lat),
+    lon: String(location.lng),
+    zoom: '18',
+    addressdetails: '1',
+    'accept-language': 'en',
+  })
+
+  const response = await fetch(`${NOMINATIM_API}/reverse?${query}`, {
+    signal,
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) return null
+
+  const place = await response.json()
 
   return {
     origin: {

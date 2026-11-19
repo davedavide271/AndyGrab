@@ -55,6 +55,7 @@ function App() {
   const [phone, setPhone] = useState('')
   const [booked, setBooked] = useState(null)
   const [bookings, setBookings] = useState(() => listBookings())
+  const [routeOptions, setRouteOptions] = useState([])
   const [bookingError, setBookingError] = useState('')
 
   useEffect(() => {
@@ -70,8 +71,9 @@ function App() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
   }
   const slotAvailable = useMemo(() => isSlotAvailable(date, time, bookings), [bookings, date, time])
-  const handleRouteChange = useCallback((route) => {
+  const handleRouteChange = useCallback((route, options = []) => {
     setTrip(route)
+    setRouteOptions(options)
     setBookingError('')
   }, [])
 
@@ -135,7 +137,10 @@ function App() {
         </div>
 
         <div className="map-visual">
-          <LiveRouteMap onRouteChange={handleRouteChange} />
+          <LiveRouteMap
+            onRouteChange={handleRouteChange}
+            selectedRouteId={trip?.id}
+          />
           <div className="eta-card"><span className="car-icon">✦</span><div><small>Driving ETA</small><strong>{trip ? trip.etaLabel : 'Select route'}</strong></div><span className="live-dot">Live</span></div>
           <div className="map-caption"><span> <i></i> {trip ? `${trip.origin.name} → ${trip.destination}` : 'Search pickup and destination'} </span><b>{trip?.distance ?? 'Click the map'}</b></div>
         </div>
@@ -147,6 +152,37 @@ function App() {
           <label className="field"><span>Passenger name</span><div><Icon name="user" /><input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" required /></div></label>
           <label className="field"><span>Mobile number</span><div><Icon name="phone" /><input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09XX XXX XXXX" pattern="[0-9+ ]{10,16}" autoComplete="tel" required /></div></label>
           <label className="field destination-field"><span>Destination</span><div><Icon name="pin" /><input type="text" value={trip?.destination ?? ''} placeholder="Select on the map" readOnly required /></div></label>
+          {routeOptions.length > 0 && (
+            <fieldset className="route-comparison">
+              <legend>Compare routes</legend>
+              <div className="route-options">
+                {routeOptions.map((route, index) => (
+                  <label
+                    className={`route-option ${trip?.id === route.id ? 'selected' : ''}`}
+                    key={route.id}
+                  >
+                    <input
+                      type="radio"
+                      name="route"
+                      value={route.id}
+                      checked={trip?.id === route.id}
+                      onChange={() => setTrip(route)}
+                    />
+                    <span className="route-option-summary">
+                      <strong>{route.isFastest ? 'Fastest route' : `Alternative ${index}`}</strong>
+                      <b>₱{route.fare}</b>
+                    </span>
+                    <span className="route-option-details">
+                      {route.etaLabel} · {route.distance}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {routeOptions.length === 1 && (
+                <p className="route-note">No alternative routes are available for this trip.</p>
+              )}
+            </fieldset>
+          )}
           <label className="field"><span>Date</span><div><Icon name="calendar" /><input type="date" value={date} min={formatDateInput(new Date())} onChange={(e) => setDate(e.target.value)} required /></div></label>
           <label className="field"><span>Pickup time</span><div><Icon name="clock" /><input type="time" value={time} onChange={(e) => setTime(e.target.value)} required /></div></label>
           <button className="fare-button" type="submit" disabled={!trip}><span><small>Estimated fare</small><strong>{trip ? `₱${trip.fare}` : '—'}</strong></span><b>Reserve ride <Icon name="arrow" /></b></button>

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   CITY_HALL,
-  getDrivingRoute,
+  getDrivingRoutes,
   reverseGeocode,
   searchPlaces,
 } from '../services/routeService'
@@ -176,7 +176,7 @@ function PlaceSearch({
   )
 }
 
-function LiveRouteMap({ onRouteChange }) {
+function LiveRouteMap({ onRouteChange, selectedRouteId }) {
   const shellRef = useRef(null)
   const containerRef = useRef(null)
   const mapRef = useRef(null)
@@ -184,6 +184,7 @@ function LiveRouteMap({ onRouteChange }) {
   const originMarkerRef = useRef(null)
   const destinationMarkerRef = useRef(null)
   const routeLineRef = useRef(null)
+  const routeOptionsRef = useRef([])
   const requestRef = useRef(null)
 
   const [origin, setOrigin] = useState(CITY_HALL)
@@ -193,6 +194,38 @@ function LiveRouteMap({ onRouteChange }) {
   )
   const [loading, setLoading] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const drawRoute = useCallback((route) => {
+    const map = mapRef.current
+    const L = window.L
+
+    if (!map || !L || !route) return
+
+    routeLineRef.current?.remove()
+
+    const routeOutline = L.polyline(route.geometry, {
+      color: '#ffffff',
+      weight: 9,
+      opacity: 0.9,
+      interactive: false,
+    })
+
+    const routePath = L.polyline(route.geometry, {
+      color: '#0d6b4f',
+      weight: 5,
+      opacity: 1,
+      interactive: false,
+    })
+
+    routeLineRef.current = L.featureGroup([
+      routeOutline,
+      routePath,
+    ]).addTo(map)
+
+    map.fitBounds(routeLineRef.current.getBounds(), {
+      padding: [55, 55],
+    })
+  }, [])
 
   const drawLocationMarkers = useCallback(
     (L, map, start, end) => {
@@ -250,6 +283,8 @@ function LiveRouteMap({ onRouteChange }) {
 
       setLoading(true)
       setStatus('Calculating the quickest driving route...')
+      routeOptionsRef.current = []
+      onRouteChange(null, [])
 
       routeLineRef.current?.remove()
       routeLineRef.current = null
@@ -257,7 +292,7 @@ function LiveRouteMap({ onRouteChange }) {
       drawLocationMarkers(L, map, start, end)
 
       try {
-        const route = await getDrivingRoute(
+        const routes = await getDrivingRoutes(
           start,
           end,
           controller.signal,
@@ -265,43 +300,19 @@ function LiveRouteMap({ onRouteChange }) {
 
         if (controller.signal.aborted) return
 
-        const routeOutline = L.polyline(route.geometry, {
-          color: '#ffffff',
-          weight: 9,
-          opacity: 0.9,
-          interactive: false,
-        })
-
-        const routePath = L.polyline(route.geometry, {
-          color: '#0d6b4f',
-          weight: 5,
-          opacity: 1,
-          interactive: false,
-        })
-
-        routeLineRef.current = L.featureGroup([
-          routeOutline,
-          routePath,
-        ]).addTo(map)
-
-        map.fitBounds(routeLineRef.current.getBounds(), {
-          padding: [55, 55],
-        })
-
-        const routeLabel =
-          route.alternativesConsidered > 1
-            ? `Quickest of ${route.alternativesConsidered} routes`
-            : 'Quickest available route'
+        routeOptionsRef.current = routes
+        const route = routes[0]
+        drawRoute(route)
 
         setStatus(
-          `${routeLabel} · ${route.distance} · about ${route.etaLabel}`,
+          `${route.isFastest ? 'Fastest route' : 'Alternative route'} · ${route.distance} · about ${route.etaLabel}`,
         )
 
-        onRouteChange(route)
+        onRouteChange(route, routes)
       } catch (error) {
         if (error.name !== 'AbortError') {
           setStatus(error.message)
-          onRouteChange(null)
+          onRouteChange(null, [])
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -309,8 +320,21 @@ function LiveRouteMap({ onRouteChange }) {
         }
       }
     },
-    [drawLocationMarkers, onRouteChange],
+    [drawLocationMarkers, drawRoute, onRouteChange],
   )
+
+  useEffect(() => {
+    const route = routeOptionsRef.current.find(
+      (option) => option.id === selectedRouteId,
+    )
+
+    if (!route) return
+
+    drawRoute(route)
+    setStatus(
+      `${route.isFastest ? 'Fastest route' : 'Alternative route'} · ${route.distance} · about ${route.etaLabel}`,
+    )
+  }, [drawRoute, selectedRouteId])
 
   const selectOrigin = useCallback(
     (place) => {
@@ -330,7 +354,7 @@ function LiveRouteMap({ onRouteChange }) {
         )
 
         setStatus('Choose a destination to calculate the route.')
-        onRouteChange(null)
+        onRouteChange(null, [])
       }
     },
     [
@@ -462,7 +486,8 @@ function LiveRouteMap({ onRouteChange }) {
           } catch (error) {
             if (error.name !== 'AbortError') {
               setStatus(error.message)
-              onRouteChange(null)
+              routeOptionsRef.current = []
+              onRouteChange(null, [])
             }
           } finally {
             if (!controller.signal.aborted) {
@@ -480,6 +505,7 @@ function LiveRouteMap({ onRouteChange }) {
     return () => {
       active = false
       requestRef.current?.abort()
+      routeOptionsRef.current = []
 
       if (map) {
         map.remove()

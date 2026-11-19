@@ -119,7 +119,7 @@ export const reverseGeocode = async (location, signal) => {
   }
 }
 
-export const getDrivingRoute = async (origin, destination, signal) => {
+export const getDrivingRoutes = async (origin, destination, signal) => {
   const coordinates =
     `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`
 
@@ -134,32 +134,37 @@ export const getDrivingRoute = async (origin, destination, signal) => {
 
   const data = await response.json()
   const routes = data.routes ?? []
-  const route = selectQuickestRoute(routes)
+  const quickestRoute = selectQuickestRoute(routes)
 
-  if (!route) {
+  if (!quickestRoute) {
     throw new Error('No drivable route was found between these locations.')
   }
 
-  const distanceKm = route.distance / 1000
-  const eta = Math.max(1, Math.ceil(route.duration / 60))
+  return [...routes]
+    .sort((a, b) => a.duration - b.duration)
+    .map((route, index) => {
+      const distanceKm = route.distance / 1000
 
-  return {
-    origin: {
-      name: origin.name || 'Selected pickup',
-      lat: origin.lat,
-      lng: origin.lng,
-    },
-    destination: destination.name || 'Selected destination',
-    destinationCoordinates: {
-      lat: destination.lat,
-      lng: destination.lng,
-    },
-    distance: `${distanceKm.toFixed(1)} km`,
-    distanceKm,
-    eta,
-    etaLabel: formatEta(route.duration),
-    alternativesConsidered: routes.length,
-    fare: Math.ceil((60 + distanceKm * 18) / 5) * 5,
-    geometry: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
-  }
+      return {
+        id: `route-${index}`,
+        isFastest: route === quickestRoute,
+        origin: {
+          name: origin.name || 'Selected pickup',
+          lat: origin.lat,
+          lng: origin.lng,
+        },
+        destination: destination.name || 'Selected destination',
+        destinationCoordinates: {
+          lat: destination.lat,
+          lng: destination.lng,
+        },
+        distance: `${distanceKm.toFixed(1)} km`,
+        distanceKm,
+        eta: Math.max(1, Math.ceil(route.duration / 60)),
+        etaLabel: formatEta(route.duration),
+        alternativesConsidered: routes.length,
+        fare: Math.ceil((60 + distanceKm * 18) / 5) * 5,
+        geometry: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+      }
+    })
 }

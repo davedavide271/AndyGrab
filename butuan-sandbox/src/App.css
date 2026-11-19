@@ -573,7 +573,7 @@ footer>small { margin-left:auto; color: var(--muted); }
 
 .driver-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
   margin: 28px 0;
 }

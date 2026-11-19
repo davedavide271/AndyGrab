@@ -346,13 +346,13 @@ export default function DriverPortal({
           <div className="stat-val">{stats.declined}</div>
           <span className="stat-desc">Released slots</span>
         </div>
-        {/* <div className="stat-card">
+        <div className="stat-card">
           <small>EST. CONFIRMED EARNINGS</small>
           <div className="stat-val revenue">
             ₱{stats.revenue.toLocaleString()}
           </div>
           <span className="stat-desc">{stats.accepted} scheduled trips</span>
-        </div> */}
+        </div>
       </div>
 
       <div className="driver-bookings-section">
@@ -498,10 +498,10 @@ export default function DriverPortal({
                   </div>
 
                   <div className="driver-trip-right">
-                    {/* <div className="driver-trip-fare">
+                    <div className="driver-trip-fare">
                       <small>Fare</small>
                       <strong>₱{b.fare}</strong>
-                    </div> */}
+                    </div>
 
                     <div className="driver-trip-actions">
                       {isPending && (

@@ -119,7 +119,7 @@ export const reverseGeocode = async (location, signal) => {
   }
 }
 
-export const getDrivingRoutes = async (origin, destination, signal) => {
+export const getDrivingRoute = async (origin, destination, signal) => {
   const coordinates =
     `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`
 
@@ -134,37 +134,65 @@ export const getDrivingRoutes = async (origin, destination, signal) => {
 
   const data = await response.json()
   const routes = data.routes ?? []
-  const quickestRoute = selectQuickestRoute(routes)
+  const route = selectQuickestRoute(routes)
 
-  if (!quickestRoute) {
+  if (!route) {
     throw new Error('No drivable route was found between these locations.')
   }
 
-  return [...routes]
-    .sort((a, b) => a.duration - b.duration)
-    .map((route, index) => {
-      const distanceKm = route.distance / 1000
+  if (!response.ok) {
+    throw new Error('Place search is temporarily unavailable.')
+  }
 
-      return {
-        id: `route-${index}`,
-        isFastest: route === quickestRoute,
-        origin: {
-          name: origin.name || 'Selected pickup',
-          lat: origin.lat,
-          lng: origin.lng,
-        },
-        destination: destination.name || 'Selected destination',
-        destinationCoordinates: {
-          lat: destination.lat,
-          lng: destination.lng,
-        },
-        distance: `${distanceKm.toFixed(1)} km`,
-        distanceKm,
-        eta: Math.max(1, Math.ceil(route.duration / 60)),
-        etaLabel: formatEta(route.duration),
-        alternativesConsidered: routes.length,
-        fare: Math.ceil((60 + distanceKm * 18) / 5) * 5,
-        geometry: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
-      }
-    })
+  const results = await response.json()
+
+  return results.map((place) => ({
+    id: place.place_id,
+    name: formatEstimatedLocation(place) || place.display_name,
+    displayName: place.display_name,
+    lat: Number(place.lat),
+    lng: Number(place.lon),
+  }))
+}
+
+export const reverseGeocode = async (location, signal) => {
+  const query = new URLSearchParams({
+    format: 'jsonv2',
+    lat: String(location.lat),
+    lon: String(location.lng),
+    zoom: '18',
+    addressdetails: '1',
+    'accept-language': 'en',
+  })
+
+  const response = await fetch(`${NOMINATIM_API}/reverse?${query}`, {
+    signal,
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) return null
+
+  const place = await response.json()
+
+  return {
+    origin: {
+      name: origin.name || 'Selected pickup',
+      lat: origin.lat,
+      lng: origin.lng,
+    },
+    destination: destination.name || 'Selected destination',
+    destinationCoordinates: {
+      lat: destination.lat,
+      lng: destination.lng,
+    },
+    distance: `${distanceKm.toFixed(1)} km`,
+    distanceKm,
+    eta,
+    etaLabel: formatEta(route.duration),
+    alternativesConsidered: routes.length,
+    fare: Math.ceil((60 + distanceKm * 18) / 5) * 5,
+    geometry: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+  }
 }

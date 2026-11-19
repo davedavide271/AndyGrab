@@ -114,6 +114,12 @@ function App() {
     }
     return "passenger";
   });
+  const [isDriverLoggedIn, setIsDriverLoggedIn] = useState(() => {
+    return (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("andygrab_driver_auth") === "true"
+    );
+  });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [trip, setTrip] = useState(null);
@@ -158,8 +164,12 @@ function App() {
 
   const handleOpenDriverAccess = () => {
     setMobileMenuOpen(false);
-    const isAuth = sessionStorage.getItem("andygrab_driver_auth") === "true";
+    const isAuth =
+      isDriverLoggedIn ||
+      (typeof window !== "undefined" &&
+        sessionStorage.getItem("andygrab_driver_auth") === "true");
     if (isAuth) {
+      if (!isDriverLoggedIn) setIsDriverLoggedIn(true);
       navigateTo("driver");
     } else {
       setIsLoginModalOpen(true);
@@ -167,6 +177,7 @@ function App() {
   };
 
   const handleDriverLoginSuccess = () => {
+    setIsDriverLoggedIn(true);
     setIsLoginModalOpen(false);
     navigateTo("driver");
   };
@@ -177,6 +188,7 @@ function App() {
     } catch {
       // ignore storage errors
     }
+    setIsDriverLoggedIn(false);
     navigateTo("passenger");
   };
 
@@ -300,9 +312,14 @@ function App() {
                 type="button"
                 className="nav-cta driver-header-login-btn"
                 onClick={handleOpenDriverAccess}
-                title="Open driver sign-in modal"
+                title={
+                  isDriverLoggedIn
+                    ? "Go to Driver's Portal"
+                    : "Open driver sign-in modal"
+                }
               >
-                <Icon name="lock" /> Driver Sign In
+                <Icon name={isDriverLoggedIn ? "user" : "lock"} />{" "}
+                {isDriverLoggedIn ? "Driver's Portal" : "Driver Sign In"}
               </button>
               <button
                 className="menu"
@@ -673,7 +690,8 @@ function App() {
                   className="driver-secondary-light-btn"
                   onClick={handleOpenDriverAccess}
                 >
-                  <Icon name="lock" /> Driver Sign In
+                  <Icon name={isDriverLoggedIn ? "user" : "lock"} />{" "}
+                  {isDriverLoggedIn ? "Driver's Portal" : "Driver Sign In"}
                 </button>
               </div>
             </div>

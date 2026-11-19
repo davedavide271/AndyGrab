@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from "react";
 
-const STATIC_DRIVER_PIN = '1234'
+const STATIC_DRIVER_PIN = "1234";
 
 const Icon = ({ name }) => {
   const paths = {
@@ -19,97 +19,97 @@ const Icon = ({ name }) => {
         <line x1="12" y1="16" x2="12.01" y2="16" />
       </>
     ),
-  }
+  };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
       {paths[name]}
     </svg>
-  )
-}
+  );
+};
 
 export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
-  const [pin, setPin] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isShaking, setIsShaking] = useState(false)
-  const inputRef = useRef(null)
+  const [pin, setPin] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isShaking, setIsShaking] = useState(false);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
-        inputRef.current?.focus()
-      }, 50)
-      return () => clearTimeout(timer)
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const handleValidation = (candidatePin) => {
     if (!candidatePin || candidatePin.length < 4) {
-      setErrorMessage('Please enter the required 4-digit PIN.')
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 500)
-      return false
+      setErrorMessage("Please enter the required 4-digit PIN.");
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return false;
     }
 
     if (candidatePin !== STATIC_DRIVER_PIN) {
-      setErrorMessage('Invalid PIN. Sign-in failed. Please try again.')
-      setPin('')
-      setIsShaking(true)
-      setTimeout(() => setIsShaking(false), 500)
-      return false
+      setErrorMessage("Invalid PIN. Sign-in failed. Please try again.");
+      setPin("");
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return false;
     }
 
-    setErrorMessage('')
+    setErrorMessage("");
     try {
-      sessionStorage.setItem('andygrab_driver_auth', 'true')
+      sessionStorage.setItem("andygrab_driver_auth", "true");
     } catch {
       // ignore storage write failure
     }
-    onSuccess()
-    return true
-  }
+    onSuccess();
+    return true;
+  };
 
   const handleSubmit = (e) => {
-    e?.preventDefault?.()
-    handleValidation(pin)
-  }
+    e?.preventDefault?.();
+    handleValidation(pin);
+  };
 
   const handleKeypadPress = (val) => {
-    if (val === 'clear') {
-      setPin('')
-      setErrorMessage('')
-      return
+    if (val === "clear") {
+      setPin("");
+      setErrorMessage("");
+      return;
     }
-    if (val === 'backspace') {
-      setPin((prev) => prev.slice(0, -1))
-      setErrorMessage('')
-      return
+    if (val === "backspace") {
+      setPin((prev) => prev.slice(0, -1));
+      setErrorMessage("");
+      return;
     }
     if (pin.length < 4) {
-      const nextPin = pin + val
-      setPin(nextPin)
-      setErrorMessage('')
+      const nextPin = pin + val;
+      setPin(nextPin);
+      setErrorMessage("");
       if (nextPin.length === 4) {
-        handleValidation(nextPin)
+        handleValidation(nextPin);
       }
     }
-  }
+  };
 
   const handleInputChange = (e) => {
-    const numeric = e.target.value.replace(/\D/g, '').slice(0, 4)
-    setPin(numeric)
-    setErrorMessage('')
+    const numeric = e.target.value.replace(/\D/g, "").slice(0, 4);
+    setPin(numeric);
+    setErrorMessage("");
     if (numeric.length === 4) {
-      handleValidation(numeric)
+      handleValidation(numeric);
     }
-  }
+  };
 
   const handleDismiss = () => {
-    setPin('')
-    setErrorMessage('')
-    onClose()
-  }
+    setPin("");
+    setErrorMessage("");
+    onClose();
+  };
 
   return (
     <div
@@ -118,29 +118,17 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
       onMouseDown={handleDismiss}
     >
       <section
-        className={`modal driver-login-modal ${isShaking ? 'shake-animation' : ''}`}
+        className={`modal driver-login-modal ${isShaking ? "shake-animation" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="driver-login-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <button
-          type="button"
-          className="driver-modal-close-btn"
-          onClick={handleDismiss}
-          aria-label="Close driver sign-in modal"
-        >
-          <Icon name="x" />
-        </button>
-
-        <div className="driver-lock-badge">
-          <Icon name="lock" />
-        </div>
-
         <small className="driver-eyebrow">DRIVER AUTHENTICATION</small>
         <h2 id="driver-login-title">Driver Sign In</h2>
         <p className="driver-login-subtext">
-          Enter your 4-digit PIN to access Andy&apos;s driver portal and booking schedule.
+          Enter your 4-digit PIN to access Andy&apos;s driver portal and booking
+          schedule.
         </p>
 
         <form onSubmit={handleSubmit} className="driver-pin-form">
@@ -152,7 +140,7 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
             {[0, 1, 2, 3].map((idx) => (
               <span
                 key={idx}
-                className={`pin-dot ${pin.length > idx ? 'filled' : ''} ${errorMessage ? 'error' : ''}`}
+                className={`pin-dot ${pin.length > idx ? "filled" : ""} ${errorMessage ? "error" : ""}`}
               />
             ))}
           </div>
@@ -184,7 +172,7 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
             <button
               type="button"
               className="keypad-btn action"
-              onClick={() => handleKeypadPress('clear')}
+              onClick={() => handleKeypadPress("clear")}
               title="Clear PIN"
             >
               C
@@ -192,14 +180,14 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
             <button
               type="button"
               className="keypad-btn"
-              onClick={() => handleKeypadPress('0')}
+              onClick={() => handleKeypadPress("0")}
             >
               0
             </button>
             <button
               type="button"
               className="keypad-btn action"
-              onClick={() => handleKeypadPress('backspace')}
+              onClick={() => handleKeypadPress("backspace")}
               title="Backspace"
             >
               ⌫
@@ -213,9 +201,9 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
             </div>
           )}
 
-          <p className="driver-pin-hint">
+          {/* <p className="driver-pin-hint">
             Authorized Driver PIN: <strong>1234</strong>
-          </p>
+          </p> */}
 
           <div className="driver-pin-actions">
             <button
@@ -236,5 +224,5 @@ export default function DriverLoginModal({ isOpen, onClose, onSuccess }) {
         </form>
       </section>
     </div>
-  )
+  );
 }

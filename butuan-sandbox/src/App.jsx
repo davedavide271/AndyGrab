@@ -259,7 +259,7 @@ function App() {
           )}
         </a>
 
-        {view === "passenger" ? (
+        {view === "passenger" && (
           <div className={`nav-links ${mobileMenuOpen ? "open" : ""}`}>
             <a href="#services" onClick={() => setMobileMenuOpen(false)}>
               Services
@@ -270,16 +270,6 @@ function App() {
             <a href="#trips" onClick={() => setMobileMenuOpen(false)}>
               My trips
             </a>
-          </div>
-        ) : (
-          <div className="nav-links">
-            <button
-              type="button"
-              className="driver-nav-back-btn"
-              onClick={() => navigateTo("passenger")}
-            >
-              ← Back to Passenger Booking
-            </button>
           </div>
         )}
 

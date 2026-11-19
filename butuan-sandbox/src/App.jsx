@@ -148,9 +148,11 @@ function App() {
     setBookingError('')
 
     if (!trip) {
-      setBookingError('Select a destination on the map before reserving your ride.')
-      return
-    }
+  setBookingError(
+    'Search for a destination or select one on the map before reserving your ride.',
+  )
+  return
+}
 
     try {
       const savedBooking = createBooking({
@@ -304,20 +306,8 @@ function App() {
             </div>
 
             <div className="map-visual">
-              <LiveRouteMap onRouteChange={handleRouteChange} />
-              <div className="eta-card">
-                <span className="car-icon">✦</span>
-                <div>
-                  <small>Driving ETA</small>
-                  <strong>{trip ? trip.etaLabel || `${trip.eta} min` : 'Select route'}</strong>
-                </div>
-                <span className="live-dot">Live</span>
-              </div>
-              <div className="map-caption">
-                <span><i></i> Origin fixed at Butuan City Hall</span>
-                <b>{trip?.distance ?? 'Click the map'}</b>
-              </div>
-            </div>
+  <LiveRouteMap onRouteChange={handleRouteChange} />
+</div>
           </section>
 
           <section className="booking-wrap shell" id="booking">

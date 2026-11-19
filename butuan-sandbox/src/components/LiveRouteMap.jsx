@@ -34,6 +34,15 @@ const MapIcon = ({ type }) => {
     )
   }
 
+  if (type === 'pin') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" />
+        <circle cx="12" cy="10" r="2" />
+      </svg>
+    )
+  }
+
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M18 6 6 18M6 6l12 12" />
@@ -41,10 +50,8 @@ const MapIcon = ({ type }) => {
   )
 }
 
-function PlaceSearch({
-  label,
+function DestinationSearch({
   value,
-  placeholder,
   onSelect,
 }) {
   const [query, setQuery] = useState(value?.name ?? '')
@@ -109,43 +116,60 @@ function PlaceSearch({
   }
 
   return (
-    <div className="map-search-field">
-      <label>
-        <span
-          className={`search-location-dot ${label.toLowerCase()}`}
-        />
+    <div className="destination-search">
+      <div className="fixed-pickup">
+        <span className="route-point route-point-origin" />
 
-        <span className="map-search-label">{label}</span>
+        <div>
+          <small>FROM</small>
+          <strong>{CITY_HALL.name}</strong>
+        </div>
 
-        <input
-          type="search"
-          value={query}
-          placeholder={placeholder}
-          autoComplete="off"
-          onFocus={() => setOpen(true)}
-          onChange={handleQueryChange}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              searchControllerRef.current?.abort()
-              setOpen(false)
-              setSearching(false)
-              event.currentTarget.blur()
-            }
+      </div>
 
-            if (
-              event.key === 'Enter' &&
-              open &&
-              results.length > 0
-            ) {
-              event.preventDefault()
-              choosePlace(results[0])
-            }
-          }}
-        />
-      </label>
+      <div className="route-connector" />
+
+      <div className="destination-input-wrap">
+        <span className="route-point route-point-destination" />
+
+        <div className="destination-input-content">
+          <small>TO</small>
+
+          <div className="destination-input-row">
+            <MapIcon type="pin" />
+
+            <input
+              type="search"
+              value={query}
+              placeholder="Search your destination"
+              autoComplete="off"
+              aria-label="Search destination"
+              onFocus={() => setOpen(true)}
+              onChange={handleQueryChange}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  searchControllerRef.current?.abort()
+                  setOpen(false)
+                  setSearching(false)
+                  event.currentTarget.blur()
+                }
+
+                if (
+                  event.key === 'Enter' &&
+                  open &&
+                  results.length > 0
+                ) {
+                  event.preventDefault()
+                  choosePlace(results[0])
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
 
       {open && query.trim().length >= 3 && (
-        <div className="place-results">
+        <div className="place-results destination-results">
           {searching && (
             <p className="place-results-message">
               Searching places...
@@ -180,27 +204,26 @@ function LiveRouteMap({ onRouteChange }) {
   const shellRef = useRef(null)
   const containerRef = useRef(null)
   const mapRef = useRef(null)
-  const originRef = useRef(CITY_HALL)
   const originMarkerRef = useRef(null)
   const destinationMarkerRef = useRef(null)
   const routeLineRef = useRef(null)
   const requestRef = useRef(null)
 
-  const [origin, setOrigin] = useState(CITY_HALL)
   const [destination, setDestination] = useState(null)
+  const [routeSummary, setRouteSummary] = useState(null)
   const [status, setStatus] = useState(
-    'Search for pickup and destination places, or click the map.',
+    'Search for a destination or select a point on the map.',
   )
   const [loading, setLoading] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   const drawLocationMarkers = useCallback(
-    (L, map, start, end) => {
+    (L, map, end) => {
       originMarkerRef.current?.remove()
       destinationMarkerRef.current?.remove()
 
       originMarkerRef.current = L.circleMarker(
-        [start.lat, start.lng],
+        [CITY_HALL.lat, CITY_HALL.lng],
         {
           radius: 9,
           color: '#ffffff',
@@ -210,7 +233,7 @@ function LiveRouteMap({ onRouteChange }) {
         },
       )
         .addTo(map)
-        .bindTooltip(`From: ${start.name}`, {
+        .bindTooltip(`Pickup: ${CITY_HALL.name}`, {
           permanent: true,
           direction: 'top',
         })
@@ -227,7 +250,7 @@ function LiveRouteMap({ onRouteChange }) {
           },
         )
           .addTo(map)
-          .bindTooltip(`To: ${end.name}`, {
+          .bindTooltip(end.name, {
             permanent: true,
             direction: 'top',
           })
@@ -237,11 +260,11 @@ function LiveRouteMap({ onRouteChange }) {
   )
 
   const calculateRoute = useCallback(
-    async (start, end) => {
+    async (end) => {
       const map = mapRef.current
       const L = window.L
 
-      if (!map || !L || !start || !end) return
+      if (!map || !L || !end) return
 
       requestRef.current?.abort()
 
@@ -249,16 +272,17 @@ function LiveRouteMap({ onRouteChange }) {
       requestRef.current = controller
 
       setLoading(true)
+      setRouteSummary(null)
       setStatus('Calculating the quickest driving route...')
 
       routeLineRef.current?.remove()
       routeLineRef.current = null
 
-      drawLocationMarkers(L, map, start, end)
+      drawLocationMarkers(L, map, end)
 
       try {
         const route = await getDrivingRoute(
-          start,
+          CITY_HALL,
           end,
           controller.signal,
         )
@@ -285,7 +309,8 @@ function LiveRouteMap({ onRouteChange }) {
         ]).addTo(map)
 
         map.fitBounds(routeLineRef.current.getBounds(), {
-          padding: [55, 55],
+          paddingTopLeft: [45, 145],
+          paddingBottomRight: [45, 145],
         })
 
         const routeLabel =
@@ -293,13 +318,12 @@ function LiveRouteMap({ onRouteChange }) {
             ? `Quickest of ${route.alternativesConsidered} routes`
             : 'Quickest available route'
 
-        setStatus(
-          `${routeLabel} · ${route.distance} · about ${route.etaLabel}`,
-        )
-
+        setStatus(routeLabel)
+        setRouteSummary(route)
         onRouteChange(route)
       } catch (error) {
         if (error.name !== 'AbortError') {
+          setRouteSummary(null)
           setStatus(error.message)
           onRouteChange(null)
         }
@@ -312,39 +336,10 @@ function LiveRouteMap({ onRouteChange }) {
     [drawLocationMarkers, onRouteChange],
   )
 
-  const selectOrigin = useCallback(
-    (place) => {
-      originRef.current = place
-      setOrigin(place)
-
-      mapRef.current?.setView([place.lat, place.lng], 15)
-
-      if (destination) {
-        calculateRoute(place, destination)
-      } else if (window.L && mapRef.current) {
-        drawLocationMarkers(
-          window.L,
-          mapRef.current,
-          place,
-          null,
-        )
-
-        setStatus('Choose a destination to calculate the route.')
-        onRouteChange(null)
-      }
-    },
-    [
-      calculateRoute,
-      destination,
-      drawLocationMarkers,
-      onRouteChange,
-    ],
-  )
-
   const selectDestination = useCallback(
     (place) => {
       setDestination(place)
-      calculateRoute(originRef.current, place)
+      calculateRoute(place)
     },
     [calculateRoute],
   )
@@ -372,6 +367,15 @@ function LiveRouteMap({ onRouteChange }) {
 
       window.setTimeout(() => {
         mapRef.current?.invalidateSize()
+
+        if (routeLineRef.current) {
+          mapRef.current?.fitBounds(
+            routeLineRef.current.getBounds(),
+            {
+              padding: active ? [80, 80] : [45, 45],
+            },
+          )
+        }
       }, 150)
     }
 
@@ -420,12 +424,7 @@ function LiveRouteMap({ onRouteChange }) {
 
         mapRef.current = map
 
-        drawLocationMarkers(
-          L,
-          map,
-          originRef.current,
-          null,
-        )
+        drawLocationMarkers(L, map, null)
 
         map.on('click', async ({ latlng }) => {
           requestRef.current?.abort()
@@ -434,7 +433,8 @@ function LiveRouteMap({ onRouteChange }) {
           requestRef.current = controller
 
           setLoading(true)
-          setStatus('Finding the selected place...')
+          setRouteSummary(null)
+          setStatus('Finding the selected destination...')
 
           try {
             const place = await reverseGeocode(
@@ -454,11 +454,7 @@ function LiveRouteMap({ onRouteChange }) {
             }
 
             setDestination(selectedPlace)
-
-            await calculateRoute(
-              originRef.current,
-              selectedPlace,
-            )
+            await calculateRoute(selectedPlace)
           } catch (error) {
             if (error.name !== 'AbortError') {
               setStatus(error.message)
@@ -495,79 +491,100 @@ function LiveRouteMap({ onRouteChange }) {
 
   return (
     <div ref={shellRef} className="live-map-shell">
-      <div className="map-search-panel">
-        <PlaceSearch
-          key={`origin-${origin.lat}-${origin.lng}`}
-          label="From"
-          value={origin}
-          placeholder="Search pickup place"
-          onSelect={selectOrigin}
-        />
-
-        <div className="map-search-divider" />
-
-        <PlaceSearch
+      <div className="map-top-controls">
+        <DestinationSearch
           key={
             destination
               ? `destination-${destination.lat}-${destination.lng}`
               : 'destination-empty'
           }
-          label="To"
           value={destination}
-          placeholder="Search destination"
           onSelect={selectDestination}
         />
+
+        <button
+          type="button"
+          className="map-fullscreen-button"
+          onClick={toggleFullscreen}
+          aria-label={
+            isFullscreen
+              ? 'Exit full screen'
+              : 'Open map full screen'
+          }
+          title={
+            isFullscreen
+              ? 'Exit full screen'
+              : 'Open map full screen'
+          }
+        >
+          <MapIcon
+            type={isFullscreen ? 'close' : 'expand'}
+          />
+
+          <span>
+            {isFullscreen ? 'Exit' : 'Full screen'}
+          </span>
+        </button>
       </div>
-
-      <button
-        type="button"
-        className="map-fullscreen-button"
-        onClick={toggleFullscreen}
-        aria-label={
-          isFullscreen
-            ? 'Exit full screen'
-            : 'Open map full screen'
-        }
-        title={
-          isFullscreen
-            ? 'Exit full screen'
-            : 'Open map full screen'
-        }
-      >
-        <MapIcon
-          type={isFullscreen ? 'close' : 'expand'}
-        />
-
-        <span>
-          {isFullscreen ? 'Exit' : 'Full screen'}
-        </span>
-      </button>
 
       <div
         ref={containerRef}
         className="live-map"
-        aria-label="Interactive route map"
+        aria-label={`Interactive route map from ${CITY_HALL.name}`}
       />
 
-      <div
-        className={`map-instruction ${
+      <section
+        className={`map-route-card ${
           loading ? 'loading' : ''
         }`}
+        aria-live="polite"
       >
-        <span />
+        <div className="route-card-heading">
+          <div>
+            <small>YOUR ROUTE</small>
 
-        <p>
-          <small>ROUTE STATUS</small>
+            <strong>
+              {routeSummary
+                ? routeSummary.destination
+                : 'Choose a destination'}
+            </strong>
+          </div>
 
-          <strong>
-            {origin?.name ?? 'Choose pickup'}
-            {' → '}
-            {destination?.name ?? 'Choose destination'}
-          </strong>
+          <span
+            className={`route-state-dot ${
+              loading ? 'is-loading' : ''
+            }`}
+          />
+        </div>
 
+        {routeSummary ? (
+          <div className="route-metrics">
+            <div>
+              <small>DRIVING ETA</small>
+              <strong>{routeSummary.etaLabel}</strong>
+            </div>
+
+            <div>
+              <small>DISTANCE</small>
+              <strong>{routeSummary.distance}</strong>
+            </div>
+
+            <div>
+              <small>EST. FARE</small>
+              <strong>₱{routeSummary.fare}</strong>
+            </div>
+          </div>
+        ) : (
+          <p className="route-empty-message">
+            Search above or click anywhere on the map.
+          </p>
+        )}
+
+        <p className="route-status-message">
+          {loading && <span className="route-spinner" />}
           {status}
         </p>
-      </div>
+      </section>
     </div>
   )
 }

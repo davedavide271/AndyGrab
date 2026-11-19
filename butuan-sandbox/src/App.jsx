@@ -137,7 +137,7 @@ function App() {
         <div className="map-visual">
           <LiveRouteMap onRouteChange={handleRouteChange} />
           <div className="eta-card"><span className="car-icon">✦</span><div><small>Driving ETA</small><strong>{trip ? trip.etaLabel : 'Select route'}</strong></div><span className="live-dot">Live</span></div>
-          <div className="map-caption"><span><i></i> Origin fixed at Butuan City Hall</span><b>{trip?.distance ?? 'Click the map'}</b></div>
+          <div className="map-caption"><span> <i></i> {trip ? `${trip.origin.name} → ${trip.destination}` : 'Search pickup and destination'} </span><b>{trip?.distance ?? 'Click the map'}</b></div>
         </div>
       </section>
 

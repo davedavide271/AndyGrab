@@ -312,3 +312,234 @@ footer>small { margin-left:auto; color: var(--muted); }
   footer>small{margin-left:0}
   .modal{padding:32px 24px}
 }
+
+
+/* Place search and full-screen map */
+.live-map-shell {
+  position: relative;
+}
+
+.live-map-shell:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background: var(--map-bg);
+}
+
+.live-map-shell:fullscreen .live-map {
+  width: 100%;
+  height: 100%;
+}
+
+.map-search-panel {
+  position: absolute;
+  z-index: 1000;
+  top: 20px;
+  left: 20px;
+  width: min(350px, calc(100% - 150px));
+  padding: 7px 14px;
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
+}
+
+.map-search-field {
+  position: relative;
+}
+
+.map-search-field label {
+  display: grid;
+  grid-template-columns: 12px 42px 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 45px;
+}
+
+.search-location-dot {
+  width: 10px;
+  height: 10px;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 1px var(--green);
+}
+
+.search-location-dot.to {
+  background: var(--lime);
+}
+
+.map-search-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.map-search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 4px;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.map-search-divider {
+  height: 1px;
+  margin-left: 20px;
+  background: var(--line);
+}
+
+.place-results {
+  position: absolute;
+  z-index: 1100;
+  top: calc(100% + 8px);
+  left: -14px;
+  right: -14px;
+  overflow: hidden;
+  max-height: 270px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.24);
+}
+
+.place-results button {
+  display: block;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.place-results button:hover {
+  background: var(--surface-alt);
+}
+
+.place-results button:last-child {
+  border-bottom: 0;
+}
+
+.place-results strong,
+.place-results small {
+  display: block;
+}
+
+.place-results strong {
+  margin-bottom: 3px;
+  font-size: 11px;
+}
+
+.place-results small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.place-results-message {
+  margin: 0;
+  padding: 15px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.map-fullscreen-button {
+  position: absolute;
+  z-index: 1000;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 13px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.map-fullscreen-button:hover {
+  color: var(--green);
+  background: var(--surface-alt);
+}
+
+.map-fullscreen-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-instruction {
+  top: auto;
+  right: 20px;
+  bottom: 42px;
+  max-width: 360px;
+}
+
+.live-map-shell:fullscreen .map-instruction {
+  bottom: 22px;
+}
+
+.live-map-shell:fullscreen .leaflet-control-attribution {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .map-search-panel {
+    top: 12px;
+    left: 12px;
+    width: calc(100% - 70px);
+    padding-inline: 10px;
+  }
+
+  .map-search-field label {
+    grid-template-columns: 10px 34px 1fr;
+    min-height: 42px;
+    gap: 6px;
+  }
+
+  .map-search-field input {
+    font-size: 11px;
+  }
+
+  .map-fullscreen-button {
+    top: 12px;
+    right: 12px;
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .map-fullscreen-button span {
+    display: none;
+  }
+
+  .map-instruction {
+    right: 12px;
+    bottom: 42px;
+    left: 12px;
+    max-width: none;
+  }
+
+  .live-map .leaflet-control-zoom {
+    margin-top: 115px;
+  }
+}
